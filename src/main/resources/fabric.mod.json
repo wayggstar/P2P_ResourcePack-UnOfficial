@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "p2p_resourcepack",
+  "version": "${version}",
+  "name": "P2P_ResourcePack",
+  "description": "Server resource packs for Instant P2P rooms.",
+  "environment": "client",
+  "entrypoints": {"client": ["dev.p2p.resourcepack.P2PResourcePack"]},
+  "mixins": ["p2p_resourcepack.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "minecraft": "26.3",
+    "java": ">=25",
+    "fabric-api": "*",
+    "instant-p2p": "1.2.3"
+  }
+}

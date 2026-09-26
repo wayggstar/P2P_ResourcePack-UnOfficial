@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "dev.p2p.resourcepack.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": ["CustomRoomScreenMixin", "ResourcePackResponseMixin"],
+  "injectors": {"defaultRequire": 1}
+}

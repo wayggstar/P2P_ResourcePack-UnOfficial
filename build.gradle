@@ -1,0 +1,54 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17.21'
+}
+
+version = '0.2.0'
+group = 'dev.p2p'
+base.archivesName = 'P2P_ResourcePack-26.3'
+
+repositories { mavenCentral() }
+
+dependencies {
+    minecraft 'com.mojang:minecraft:26.3'
+    implementation 'net.fabricmc:fabric-loader:0.19.5'
+    implementation 'net.fabricmc.fabric-api:fabric-api:0.160.5+26.3'
+    implementation files('libs/instant-p2p-26.3-1.2.3.jar')
+    testImplementation platform('org.junit:junit-bom:5.13.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(25)
+    withSourcesJar()
+}
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') { expand version: project.version }
+}
+test {
+    useJUnitPlatform()
+    if (project.hasProperty('liveUpload')) systemProperty 'p2p.liveUpload', 'true'
+}
+
+// Opt-in development fixture; never included in the release JAR.
+sourceSets {
+    smoke {
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += output + sourceSets.main.runtimeClasspath
+    }
+}
+loom {
+    mods {
+        p2p_resourcepack { sourceSet sourceSets.main }
+        if (project.hasProperty('smokeTest')) {
+            p2p_resourcepack_smoke { sourceSet sourceSets.smoke }
+        }
+    }
+    if (project.hasProperty('smokeTest')) {
+        runs {
+            client { source sourceSets.smoke }
+        }
+    }
+}

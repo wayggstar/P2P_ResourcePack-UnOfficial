@@ -32,7 +32,6 @@ Instant P2P의 **방 만들기 / 방 설정 변경 → 리소스팩 설정**에�
 
 - **Instant P2P 제작: 카이트 (KITE2459)**
   - 원본 소스: https://github.com/KITE2459/kfcudp-instant-p2p
-  - 원본 배포: https://modrinth.com/mod/instant-p2p
 - **P2P_ResourcePack은 별도의 비공식 애드온**입니다. 카이트가 이 애드온을 제작·보증한 것으로 표시하지 않습니다.
 - 서버 리소스팩 방식 참고: [PaperMC / Adventure Resource packs](https://docs.papermc.io/adventure/resource-pack/)
 - 개발 도구 참고: [Fabric for Minecraft 26.3](https://www.fabricmc.net/2026/09/15/263.html)

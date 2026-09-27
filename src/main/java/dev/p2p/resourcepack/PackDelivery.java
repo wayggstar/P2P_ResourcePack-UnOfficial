@@ -1,7 +1,7 @@
 package dev.p2p.resourcepack;
 
 import java.util.*;
-import kfc.udp.client.webrtc.WebRtcBridge;
+import kfc.udp.client.quic.QuicBridge;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.ClientboundResourcePackPopPacket;
@@ -28,7 +28,7 @@ public final class PackDelivery {
 
     public static void tick(MinecraftServer server) {
         if (!(server instanceof IntegratedServer)) return;
-        Object token = WebRtcBridge.currentHostToken();
+        Object token = QuicBridge.currentHostToken();
         PackSettings settings = P2PResourcePack.SETTINGS.get();
         if (hostToken != token || !applied.equals(settings)) {
             SENT.forEach((handler, delivery) -> handler.send(new ClientboundResourcePackPopPacket(Optional.of(delivery.id))));

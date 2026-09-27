@@ -12,6 +12,6 @@
     "minecraft": "26.3",
     "java": ">=25",
     "fabric-api": "*",
-    "instant-p2p": "1.2.3"
+    "instant-p2p": "1.3"
   }
 }

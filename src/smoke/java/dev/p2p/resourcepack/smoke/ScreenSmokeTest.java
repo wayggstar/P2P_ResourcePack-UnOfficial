@@ -3,6 +3,7 @@ package dev.p2p.resourcepack.smoke;
 import dev.p2p.resourcepack.ResourcePackScreen;
 import dev.p2p.resourcepack.UploadScreen;
 import kfc.udp.client.gui.CustomRoomScreen;
+import kfc.udp.client.quic.QuicBridge;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.gui.components.Button;
@@ -24,6 +25,9 @@ public final class ScreenSmokeTest implements ClientModInitializer {
                 try {
                     // Force transformation of the packet-listener mixin, even without a server.
                     Class.forName("net.minecraft.server.network.ServerCommonPacketListenerImpl");
+                    if (QuicBridge.currentHostToken() != null) throw new AssertionError("Unexpected active host in isolated smoke test");
+                    // Resolve the addon call site too, catching accidental references to the removed WebRTC bridge.
+                    Class.forName("dev.p2p.resourcepack.PackDelivery");
                     room = new CustomRoomScreen(client.gui.screen());
                     client.setScreenAndShow(room);
                     String label = Component.translatable("p2p_resourcepack.open").getString();
@@ -43,7 +47,7 @@ public final class ScreenSmokeTest implements ClientModInitializer {
                     String publicLabel = Component.translatable("p2p_resourcepack.upload_public").getString();
                     Button publicUpload = (Button) client.gui.screen().children().stream().filter(w -> w instanceof Button b && b.getMessage().getString().equals(publicLabel)).findFirst().orElseThrow();
                     if (publicUpload.active) throw new AssertionError("Upload must be disabled without a verified file");
-                    LoggerFactory.getLogger("P2P_ResourcePack-Smoke").info("SMOKE PASS: mixins, room title, settings and upload screen; upload disabled without a verified file");
+                    LoggerFactory.getLogger("P2P_ResourcePack-Smoke").info("SMOKE PASS: Instant P2P 1.3 QUIC bridge, mixins, room title, settings and upload screen; upload disabled without a verified file");
                     stage = 1;
                     ticks = 0;
                 } catch (Throwable e) {

@@ -6,8 +6,8 @@ Instant P2P의 **방 만들기 / 방 설정 변경 → 리소스팩 설정**에�
 
 - Minecraft **26.3**, Java **25 이상**
 - Fabric Loader **0.19.5 이상**, Fabric API **0.160.5+26.3**
-- **Instant P2P 1.2.3 (26.3용)**
-- 방장의 `mods` 폴더에 `P2P_ResourcePack-26.3-0.2.0.jar`를 추가합니다.
+- **Instant P2P 1.3 (26.3용)**
+- 방장의 `mods` 폴더에 `P2P_ResourcePack-26.3-0.2.1.jar`를 추가합니다.
 - 참가자는 Instant P2P로 접속하며, 이 애드온은 추가 설치할 필요가 없습니다. 기본 Minecraft 서버 리소스팩 패킷을 사용합니다.
 
 ## 사용 방법
@@ -40,13 +40,13 @@ Instant P2P의 **방 만들기 / 방 설정 변경 → 리소스팩 설정**에�
 
 ## 빌드
 
-Java 25를 설치하고, 원본 JAR을 `libs/instant-p2p-26.3-1.2.3.jar`에 넣습니다.
+Java 25를 설치하고, 원본 JAR을 `libs/instant-p2p-26.3-1.3.jar`에 넣습니다.
 
 ```sh
 ./gradlew build
 ```
 
-산출물: `build/libs/P2P_ResourcePack-26.3-0.2.0.jar`
+산출물: `build/libs/P2P_ResourcePack-26.3-0.2.1.jar`
 
 자동 테스트는 로컬 HTTP 서버로 다운로드·리다이렉트·잘못된 ZIP·크기 제한·설정 저장을 확인합니다. 실제 P2P 환경의 두 컴퓨터 간 접속/적용은 별도의 플레이 테스트가 필요합니다.
 

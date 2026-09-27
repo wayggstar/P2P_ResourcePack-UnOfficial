@@ -81,7 +81,7 @@ public final class PackVerifier {
             connection.setConnectTimeout(10_000);
             connection.setReadTimeout(10_000);
             connection.setInstanceFollowRedirects(false);
-            connection.setRequestProperty("User-Agent", "P2P_ResourcePack/0.2.0");
+            connection.setRequestProperty("User-Agent", "P2P_ResourcePack/0.2.1");
             try {
                 int status = connection.getResponseCode();
                 if (status == 301 || status == 302 || status == 303 || status == 307 || status == 308) {

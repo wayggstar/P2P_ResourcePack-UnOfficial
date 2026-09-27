@@ -19,6 +19,6 @@ public final class P2PResourcePack implements ClientModInitializer {
         ServerTickEvents.END_SERVER_TICK.register(PackDelivery::tick);
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> PackDelivery.remove(handler));
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> PackDelivery.clear());
-        LOG.info("P2P_ResourcePack 0.2.0 loaded. Unofficial addon. Instant P2P by 카이트 (KITE2459): https://github.com/KITE2459/kfcudp-instant-p2p");
+        LOG.info("P2P_ResourcePack 0.2.1 loaded. Unofficial addon. Instant P2P by 카이트 (KITE2459): https://github.com/KITE2459/kfcudp-instant-p2p");
     }
 }

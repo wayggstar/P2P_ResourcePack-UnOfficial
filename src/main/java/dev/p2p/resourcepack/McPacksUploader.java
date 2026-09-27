@@ -65,7 +65,7 @@ public final class McPacksUploader {
 
             HttpRequest request = HttpRequest.newBuilder(endpoint).timeout(Duration.ofMinutes(3))
                     .header("Accept", "application/json")
-                    .header("User-Agent", "P2P_ResourcePack/0.2.0")
+                    .header("User-Agent", "P2P_ResourcePack/0.2.1")
                     .header("Content-Type", "multipart/form-data; boundary=" + boundary).POST(body).build();
             try (HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(15))
                     .followRedirects(HttpClient.Redirect.NEVER).build()) {

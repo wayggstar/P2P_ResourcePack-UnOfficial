@@ -17,7 +17,7 @@ public final class SettingsStore {
         if (!Files.exists(path)) return;
         try {
             PackSettings loaded = JSON.fromJson(Files.readString(path), PackSettings.class);
-            if (loaded == null || (loaded.enabled() && !loaded.verified())) {
+            if (loaded == null || !loaded.validForDelivery()) {
                 throw new IOException("Invalid resource pack configuration: " + path);
             }
             current = loaded;
@@ -27,7 +27,7 @@ public final class SettingsStore {
     }
 
     public synchronized void save(PackSettings settings) throws IOException {
-        if (settings.enabled() && !settings.verified()) throw new IOException("Verify the pack before enabling it.");
+        if (!settings.validForDelivery()) throw new IOException("Verify the pack before enabling it.");
         Files.createDirectories(path.getParent());
         Path temp = Files.createTempFile(path.getParent(), "p2p-resourcepack-", ".tmp");
         try {

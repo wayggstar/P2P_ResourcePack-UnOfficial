@@ -1,8 +1,39 @@
 # 변경 이력
 
-## 0.2.1
+## 0.3.0
 
-- Minecraft 26.3용 Instant P2P **1.3**에 대응했습니다.
-- 제거된 `WebRtcBridge` 대신 `QuicBridge.currentHostToken()`으로 방의 열림·닫힘·재시작을 감지합니다.
-- 의존 모드 버전을 1.3으로 지정했습니다. Instant P2P 1.2.3 사용자는 애드온 0.2.0을 사용하세요.
-- 리소스팩 설정, mcpacks.dev 업로드, 로그 및 카이트 출처 표시는 유지합니다.
+### Compatibility
+
+- Added support for Instant P2P 1.7.3.
+- Updated Fabric Loader to 0.20.1.
+- Updated Fabric API to 0.166.2+26.3.
+- Retained Minecraft 26.3 and Java 25 support.
+
+### Resource pack sharing
+
+- Added four sharing modes: off, direct ZIP URL, ZIP file upload, and the host's active resource packs.
+- Added a refreshable list of active local packs from Minecraft's pack repository, with per-pack checkboxes, sizes, and priority.
+- Uploads keep the bytes of original ZIP files and compress folder packs into temporary ZIPs. The addon verifies the hosted download against the original SHA-1 and reuses verified download URLs for identical files.
+- Active sharing prepares up to three packs concurrently and shows the number ready. The host publishes changes with Apply. A failed update preserves the previous verified list.
+- When a guest accepts, the host's integrated server sends each pack's download URL and SHA-1 through vanilla resource-pack packets in the host's application order. The guest's client downloads each ZIP from its web host. Guests can join with Instant P2P alone.
+- Existing enabled settings are loaded in direct URL mode.
+
+### Guest resource pack choice
+
+- Added a Minecraft confirmation dialog on join and when the host changes the shared pack list. It shows pack names with the highest priority first. The choices apply to the entire list, and previous choices expire when the list changes.
+- Guest dialog and status messages use the guest's Minecraft language. Korean and English are supported, with English as the fallback.
+- Public rooms use optional packs. Guests can choose Apply or Skip and can stay connected without responding. Private rooms can require packs and present Apply or Leave.
+- Dialog buttons submit choices through Minecraft's dialog protocol without running chat commands.
+
+### Instant P2P integration
+
+- Migrated QUIC bridge integration to the g8 package.
+- Updated CustomRoomScreen mixin targets.
+- Updated GUI smoke tests for Instant P2P 1.7.3.
+- Updated version metadata and documentation.
+
+### Validation
+
+- The Gradle build and nine automated tests passed. Coverage includes settings migration, file names, folder ZIP changes, overlapping uploads, SHA-1 cache reuse over local HTTP, pack order, and one-time choices.
+- The Minecraft 26.3 smoke test passed for room settings, all four sharing modes, public and private required settings, localized dialogs and pack names, upload gating, and vanilla pack stack order.
+- Live uploads to mcpacks.dev and two-account P2P delivery and consent remain unverified.

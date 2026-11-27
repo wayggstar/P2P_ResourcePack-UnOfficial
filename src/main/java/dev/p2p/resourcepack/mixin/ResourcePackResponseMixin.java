@@ -1,6 +1,7 @@
 package dev.p2p.resourcepack.mixin;
 
 import dev.p2p.resourcepack.PackDelivery;
+import net.minecraft.network.protocol.common.ServerboundCustomClickActionPacket;
 import net.minecraft.network.protocol.common.ServerboundResourcePackPacket;
 import net.minecraft.server.network.ServerCommonPacketListenerImpl;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,5 +15,10 @@ public abstract class ResourcePackResponseMixin {
     @Inject(method = "handleResourcePackResponse", at = @At("TAIL"))
     private void p2pResourcePack$response(ServerboundResourcePackPacket packet, CallbackInfo ci) {
         PackDelivery.response((ServerCommonPacketListenerImpl) (Object) this, packet);
+    }
+
+    @Inject(method = "handleCustomClickAction", at = @At("TAIL"))
+    private void p2pResourcePack$answer(ServerboundCustomClickActionPacket packet, CallbackInfo ci) {
+        PackDelivery.answer((ServerCommonPacketListenerImpl) (Object) this, packet);
     }
 }

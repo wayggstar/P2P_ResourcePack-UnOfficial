@@ -5,13 +5,19 @@
   "name": "P2P_ResourcePack",
   "description": "Server resource packs for Instant P2P rooms.",
   "environment": "client",
-  "entrypoints": {"client": ["dev.p2p.resourcepack.P2PResourcePack"]},
-  "mixins": ["p2p_resourcepack.mixins.json"],
+  "entrypoints": {
+    "client": [
+      "dev.p2p.resourcepack.P2PResourcePack"
+    ]
+  },
+  "mixins": [
+    "p2p_resourcepack.mixins.json"
+  ],
   "depends": {
-    "fabricloader": ">=0.19.5",
+    "fabricloader": ">=0.20.1",
     "minecraft": "26.3",
     "java": ">=25",
-    "fabric-api": "*",
-    "instant-p2p": "1.3"
+    "fabric-api": ">=0.166.2",
+    "instant-p2p": "1.7.3"
   }
 }

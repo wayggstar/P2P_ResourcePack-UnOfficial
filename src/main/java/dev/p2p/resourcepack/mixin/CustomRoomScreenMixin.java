@@ -12,9 +12,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(targets = "kfc.udp.client.gui.CustomRoomScreen", remap = false)
+@Mixin(targets = "kfc.udp.g8.client.gui.room.CustomRoomScreen", remap = false)
 public abstract class CustomRoomScreenMixin extends Screen {
     @Shadow private EditBox titleField;
+    @Shadow private boolean publicRoom;
     @Unique private String p2pResourcePack$savedRoomTitle;
 
     protected CustomRoomScreenMixin(Component title) { super(title); }
@@ -27,7 +28,7 @@ public abstract class CustomRoomScreenMixin extends Screen {
         }
         addRenderableWidget(Button.builder(Component.translatable("p2p_resourcepack.open"), button -> {
             p2pResourcePack$savedRoomTitle = titleField == null ? null : titleField.getValue();
-            minecraft.setScreenAndShow(new ResourcePackScreen(this));
+            minecraft.setScreenAndShow(new ResourcePackScreen(this, publicRoom));
         }).bounds(width / 2 + 35, 87, 120, 20).build());
     }
 }

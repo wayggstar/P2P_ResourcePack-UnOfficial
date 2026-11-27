@@ -14,6 +14,14 @@ public final class PackVerifier {
     public static final long MAX_BYTES = 100L * 1024 * 1024;
     public record Result(String sha1, long bytes) {}
 
+    static final class HttpStatusException extends IOException {
+        final int status;
+        HttpStatusException(int status) {
+            super("Download returned HTTP " + status + ".");
+            this.status = status;
+        }
+    }
+
     public static Result verify(String url) throws IOException {
         return verify(url, MAX_BYTES);
     }
@@ -81,7 +89,7 @@ public final class PackVerifier {
             connection.setConnectTimeout(10_000);
             connection.setReadTimeout(10_000);
             connection.setInstanceFollowRedirects(false);
-            connection.setRequestProperty("User-Agent", "P2P_ResourcePack/0.2.1");
+            connection.setRequestProperty("User-Agent", "P2P_ResourcePack/0.3.0");
             try {
                 int status = connection.getResponseCode();
                 if (status == 301 || status == 302 || status == 303 || status == 307 || status == 308) {
@@ -90,7 +98,7 @@ public final class PackVerifier {
                     uri = PackSettings.checkUrl(uri.resolve(location).toString());
                     continue;
                 }
-                if (status != 200) throw new IOException("Download returned HTTP " + status + ".");
+                if (status != 200) throw new HttpStatusException(status);
                 if (connection.getContentLengthLong() > limit) throw new IOException("Resource pack exceeds download limit.");
                 long total = 0;
                 try (InputStream input = connection.getInputStream(); OutputStream output = Files.newOutputStream(file)) {

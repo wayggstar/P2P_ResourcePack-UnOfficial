@@ -10,16 +10,93 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 
 /** Official mcpacks.dev API: multipart POST /api/v1/packs, field "file". */
 public final class McPacksUploader {
     public static final URI ENDPOINT = URI.create("https://mcpacks.dev/api/v1/packs");
     private static final Gson JSON = new GsonBuilder().setPrettyPrinting().create();
+    private record UploadKey(URI endpoint, Path receipts, String sha1) {}
+    private static final Map<UploadKey, CompletableFuture<Result>> IN_FLIGHT = new ConcurrentHashMap<>();
     private final URI endpoint;
     public record Result(String url, String sha1, long bytes, Path receipt) {}
 
     public McPacksUploader() { this(ENDPOINT); }
     McPacksUploader(URI endpoint) { this.endpoint = endpoint; }
+
+    public Result uploadCached(Path source, PackVerifier.Result verified, Path receipts)
+            throws IOException, InterruptedException {
+        var key = new UploadKey(endpoint, receipts.toAbsolutePath().normalize(), verified.sha1());
+        var pending = new CompletableFuture<Result>();
+        var existing = IN_FLIGHT.putIfAbsent(key, pending);
+        if (existing != null) {
+            try {
+                return existing.get();
+            } catch (ExecutionException e) {
+                if (e.getCause() instanceof IOException io) throw io;
+                throw new IOException("Concurrent upload did not complete.", e.getCause());
+            }
+        }
+
+        try {
+            var result = uploadOrReuse(source, verified, key.receipts());
+            pending.complete(result);
+            return result;
+        } catch (IOException | InterruptedException | RuntimeException | Error e) {
+            pending.completeExceptionally(e);
+            throw e;
+        } finally {
+            IN_FLIGHT.remove(key, pending);
+        }
+    }
+
+    private Result uploadOrReuse(Path source, PackVerifier.Result verified, Path receipts)
+            throws IOException, InterruptedException {
+        var cached = findVerifiedReceipt(verified.sha1(), receipts);
+        if (cached != null) {
+            try {
+                if (PackVerifier.verify(cached.url()).sha1().equals(verified.sha1())) {
+                    return new Result(cached.url(), verified.sha1(), verified.bytes(), cached.receipt());
+                }
+            } catch (PackVerifier.HttpStatusException e) {
+                if (e.status != 404 && e.status != 410) throw e;
+            }
+        }
+        return upload(source, verified.sha1(), receipts);
+    }
+
+    private Result findVerifiedReceipt(String hash, Path receipts) throws IOException {
+        if (!Files.isDirectory(receipts)) return null;
+        try (var files = Files.newDirectoryStream(receipts, "upload-*.json")) {
+            Result newest = null;
+            java.nio.file.attribute.FileTime newestTime = null;
+            for (Path receipt : files) {
+                try {
+                    var record = JsonParser.parseString(Files.readString(receipt)).getAsJsonObject();
+                    if (!"verified".equals(record.get("status").getAsString())
+                            || !hash.equals(record.get("sha1").getAsString())
+                            || !endpoint.getHost().equalsIgnoreCase(record.get("service").getAsString())) continue;
+                    String url = record.getAsJsonObject("data").get("download_url").getAsString();
+                    if (!isServiceDownload(PackSettings.checkUrl(url))) continue;
+                    var time = Files.getLastModifiedTime(receipt);
+                    if (newestTime == null || time.compareTo(newestTime) > 0) {
+                        newestTime = time;
+                        newest = new Result(url, hash, 0, receipt);
+                    }
+                } catch (RuntimeException | IOException ignored) {
+                    // Incomplete or unreadable receipts cannot be reused.
+                }
+            }
+            return newest;
+        }
+    }
+
+    private boolean isServiceDownload(URI download) {
+        return endpoint.getScheme().equalsIgnoreCase(download.getScheme())
+                && endpoint.getAuthority().equalsIgnoreCase(download.getAuthority());
+    }
 
     public Result upload(Path source, String expectedSha1, Path receipts) throws IOException, InterruptedException {
         if (!Files.isRegularFile(source) || !source.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".zip")) {
@@ -65,7 +142,7 @@ public final class McPacksUploader {
 
             HttpRequest request = HttpRequest.newBuilder(endpoint).timeout(Duration.ofMinutes(3))
                     .header("Accept", "application/json")
-                    .header("User-Agent", "P2P_ResourcePack/0.2.1")
+                    .header("User-Agent", "P2P_ResourcePack/0.3.0")
                     .header("Content-Type", "multipart/form-data; boundary=" + boundary).POST(body).build();
             try (HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(15))
                     .followRedirects(HttpClient.Redirect.NEVER).build()) {
@@ -88,8 +165,7 @@ public final class McPacksUploader {
                     Files.writeString(receipt, JSON.toJson(record));
                     String url = data.get("download_url").getAsString();
                     URI download = PackSettings.checkUrl(url);
-                    if (!endpoint.getScheme().equalsIgnoreCase(download.getScheme())
-                            || !endpoint.getAuthority().equalsIgnoreCase(download.getAuthority())) {
+                    if (!isServiceDownload(download)) {
                         throw new IllegalArgumentException("Unexpected download destination.");
                     }
                     String hash = data.get("sha1").getAsString();

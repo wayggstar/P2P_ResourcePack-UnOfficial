@@ -94,20 +94,24 @@ public final class UploadScreen extends Screen {
         if (busy || verified == null) return;
         busy = uploading = true;
         int request = ++generation;
-        String hash = verified.sha1();
+        PackVerifier.Result checked = verified;
+        String hash = checked.sha1();
         Path selected = file;
         status = text("uploading");
         refresh();
         P2PResourcePack.LOG.info("Public resource pack upload to mcpacks.dev started: sha1={}", hash);
         WORKER.submit(() -> {
             try {
-                var result = new McPacksUploader().upload(selected, hash,
+                if (!PackVerifier.verifyFile(selected).equals(checked)) {
+                    throw new java.io.IOException("Selected ZIP changed.");
+                }
+                var result = new McPacksUploader().uploadCached(selected, checked,
                         FabricLoader.getInstance().getConfigDir().resolve("p2p_resourcepack_uploads"));
                 P2PResourcePack.LOG.info("mcpacks.dev upload verified: sha1={}, bytes={}; management receipt saved locally", result.sha1(), result.bytes());
                 minecraft.execute(() -> {
                     if (request != generation) return;
                     busy = uploading = false;
-                    parent.acceptUpload(result);
+                    parent.acceptUpload(result, selected.getFileName().toString());
                     minecraft.setScreenAndShow(parent);
                 });
             } catch (Exception e) {
